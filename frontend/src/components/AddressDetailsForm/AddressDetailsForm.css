@@ -1,0 +1,13 @@
+@reference "../../index.css";
+
+.details-form {
+  @apply space-y-4;
+}
+
+.details-grid {
+  @apply grid grid-cols-3 gap-4;
+}
+
+.details-grid>div {
+  @apply col-span-1;
+}
