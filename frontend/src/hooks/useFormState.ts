@@ -1,11 +1,5 @@
 import { useState, type ChangeEvent } from 'react';
-
-export interface AddressDetails {
-    street: string;
-    houseNumber: string;
-    apartment: string;
-    postalCode: string;
-}
+import type { AddressDetails } from '../types';
 
 export function useFormState() {
     const [country, setCountry] = useState('');

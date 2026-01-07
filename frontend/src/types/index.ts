@@ -12,3 +12,17 @@ export interface Region extends Location {
 export interface City extends Location {
   regionCode: string;
 }
+
+export interface AddressDetails {
+  street: string;
+  houseNumber: string;
+  apartment: string;
+  postalCode: string;
+}
+
+export interface Address {
+  country: string;
+  region: string;
+  city: string;
+  addressDetails: AddressDetails
+}

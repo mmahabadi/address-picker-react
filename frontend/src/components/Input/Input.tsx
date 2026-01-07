@@ -1,4 +1,4 @@
-import React, { useState, type ChangeEvent, type FormEvent, type InputHTMLAttributes } from 'react';
+import { useState, type ChangeEvent, type FormEvent, type InputHTMLAttributes } from 'react';
 import './Input.css';
 
 interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
