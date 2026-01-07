@@ -1,3 +1,4 @@
+import { useRef } from 'react';
 import { useAddressData } from '../../hooks/useAddressData';
 import { useFormState } from '../../hooks/useFormState';
 import { AddressDetailsForm } from '../AddressDetailsForm';
@@ -16,15 +17,20 @@ export function AddressPicker() {
     handleAddressDetailsChange,
   } = useFormState();
   const { countries, regions, cities } = useAddressData(country, region);
+  const form = useRef<HTMLFormElement>(null);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle submission
-    console.log({ country, region, city, addressDetails });
+    if (form.current?.checkValidity()) {
+      // Handle submission
+      console.log({ country, region, city, addressDetails });
+    } else {
+      form.current?.reportValidity();
+    }
   };
 
   return (
-    <form onSubmit={handleSubmit} className="form">
+    <form ref={form} onSubmit={handleSubmit} className="form" noValidate>
       <div>
         <h2 className="form-title">Delivery address</h2>
         <p className="form-description">
@@ -39,6 +45,7 @@ export function AddressPicker() {
           name="country"
           value={country}
           onChange={handleCountryChange}
+          required
           options={countries.map((country) => ({
             value: country.code,
             label: country.name,
@@ -51,7 +58,7 @@ export function AddressPicker() {
           name="region"
           value={region}
           onChange={handleRegionChange}
-          disabled={!country}
+          required
           options={regions.map((region) => ({
             value: region.code,
             label: region.name,
@@ -65,7 +72,7 @@ export function AddressPicker() {
         name="city"
         value={city}
         onChange={handleCityChange}
-        disabled={!region}
+        required
         options={cities.map((city) => ({
           value: city.code,
           label: city.name,

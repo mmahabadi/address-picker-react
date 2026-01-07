@@ -15,6 +15,7 @@ export function AddressDetailsForm({ onChange }: AddressDetailsFormProps) {
         name="street"
         type="text"
         placeholder="Street name"
+        required
         onChange={onChange}
       />
 
@@ -25,6 +26,7 @@ export function AddressDetailsForm({ onChange }: AddressDetailsFormProps) {
             id="houseNumber"
             name="houseNumber"
             type="text"
+            required
             onChange={onChange}
           />
         </div>
@@ -43,6 +45,7 @@ export function AddressDetailsForm({ onChange }: AddressDetailsFormProps) {
             id="postalCode"
             name="postalCode"
             type="text"
+            required
             onChange={onChange}
           />
         </div>
