@@ -1,6 +1,8 @@
 import type { Country, Region, City } from '../types';
 
-export const getCountries = (): Promise<Country[]> => {
+export const getCountries = async (): Promise<Country[]> => {
+  await new Promise((resolve) => setTimeout(resolve, 1000));
+  // return Promise.reject(new Error('Failed to fetch countries'));
   // return fetch('/countries').then(res => res.json());
   return Promise.resolve([
     {
@@ -18,8 +20,9 @@ export const getCountries = (): Promise<Country[]> => {
   ]);
 };
 
-export const getRegions = (countryCode: string): Promise<Region[]> => {
+export const getRegions = async (countryCode: string): Promise<Region[]> => {
   // return fetch(`/countries/${countryCode}/regions`).then(res => res.json());
+  await new Promise((resolve) => setTimeout(resolve, 1000));
   return Promise.resolve(
     [
       {
@@ -51,7 +54,8 @@ export const getRegions = (countryCode: string): Promise<Region[]> => {
   );
 };
 
-export const getCities = (regionCode: string): Promise<City[]> => {
+export const getCities = async (regionCode: string): Promise<City[]> => {
+  await new Promise((resolve) => setTimeout(resolve, 1000));
   // return fetch(`/regions/${regionCode}/cities`).then(res => res.json());
   return Promise.resolve(
     [
@@ -76,8 +80,8 @@ export const getCities = (regionCode: string): Promise<City[]> => {
         regionCode: 'US-NY',
       },
       {
-        code: 'NL-NH',
-        name: 'North Holland',
+        code: 'NL-AMS',
+        name: 'Amsterdam',
         regionCode: 'NL-NH',
       },
     ].filter((city) => city.regionCode === regionCode)

@@ -1,4 +1,4 @@
-import { useAddressFormContext } from '../../contexts/AddressFormContext';
+import { useAddressFormContext } from '../../contexts';
 import { useAddressData } from '../../hooks/useAddressData';
 import './AddressSummary.css';
 

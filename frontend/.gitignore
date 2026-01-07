@@ -26,3 +26,4 @@ dist-ssr
 # Test results
 test-results/
 *.xml
+coverage/

@@ -4,6 +4,10 @@
   @apply block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2;
 }
 
+.select-wrapper {
+  @apply relative;
+}
+
 .select {
   @apply appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500;
 
@@ -18,4 +22,19 @@
 
 .error-message {
   @apply text-red-500 text-xs italic;
+}
+
+.loading-indicator {
+  @apply absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none;
+}
+
+.spinner {
+  @apply inline-block w-4 h-4 border-2 border-gray-500 border-t-transparent rounded-full;
+  animation: spin 0.6s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
 }

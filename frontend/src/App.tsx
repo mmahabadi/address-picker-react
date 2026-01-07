@@ -1,4 +1,4 @@
-import { AddressFormProvider } from './contexts/AddressFormContext';
+import { AddressFormProvider } from './contexts';
 import { AddressPicker } from './components/AddressPicker';
 
 function App() {

@@ -1,0 +1,44 @@
+@reference "../../index.css";
+
+.alert {
+  @apply rounded-md p-4 mb-4;
+}
+
+.alert-error {
+  @apply bg-red-50 border border-red-200;
+}
+
+.alert-content {
+  @apply text-sm;
+}
+
+.alert-header {
+  @apply flex items-center justify-between mb-2;
+}
+
+.alert-content strong {
+  @apply text-red-800 font-semibold;
+}
+
+.alert-list {
+  @apply list-none m-0 p-0 space-y-1;
+}
+
+.alert-list li {
+  @apply text-red-700;
+}
+
+.alert-dismiss {
+  @apply ml-2 text-red-500 hover:text-red-700 font-bold text-lg leading-none cursor-pointer bg-transparent border-none p-0;
+  @apply focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-1 rounded;
+  line-height: 1;
+  width: 20px;
+  height: 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.capitalize {
+  @apply capitalize;
+}

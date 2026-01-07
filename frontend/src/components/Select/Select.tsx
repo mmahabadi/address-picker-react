@@ -2,6 +2,7 @@ import { useState, type ChangeEvent, type FormEvent, type SelectHTMLAttributes }
 import './Select.css';
 
 interface SelectProps extends SelectHTMLAttributes<HTMLSelectElement> {
+  loading?: boolean;
   label: string;
   name: string;
   options?: { value: string; label: string }[];
@@ -9,6 +10,7 @@ interface SelectProps extends SelectHTMLAttributes<HTMLSelectElement> {
 }
 
 export function Select({
+  loading,
   label,
   name,
   id,
@@ -37,22 +39,30 @@ export function Select({
       <label htmlFor={id} className="label">
         {label} {required && <span>*</span>}
       </label>
-      <select
-        id={id}
-        name={name}
-        className={`select ${className}`}
-        required={required}
-        onInvalid={handleInvalid}
-        {...props}
-        onChange={handleChange}
-      >
-        <option value="">Select {name}</option>
-        {options?.map((option) => (
-          <option key={option.value} value={option.value}>
-            {option.label}
-          </option>
-        ))}
-      </select>
+      <div className="select-wrapper">
+        <select
+          id={id}
+          name={name}
+          className={`select ${className}`}
+          required={required}
+          onInvalid={handleInvalid}
+          disabled={disabled || loading}
+          {...props}
+          onChange={handleChange}
+        >
+          <option value="">{loading ? 'Loading...' : `Select ${name}`}</option>
+          {options?.map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
+        {loading && (
+          <span className="loading-indicator" aria-label="Loading">
+            <span className="spinner"></span>
+          </span>
+        )}
+      </div>
       {error && !disabled && (
         <span id={`${id}-error`} className="error-message">
           {error}

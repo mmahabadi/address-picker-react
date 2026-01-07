@@ -27,3 +27,19 @@ export interface Address {
   city: string;
   addressDetails: AddressDetails;
 }
+
+export interface AddressDataValues {
+  countries: Country[];
+  regions: Region[];
+  cities: City[];
+  loading: {
+    countries: boolean;
+    regions: boolean;
+    cities: boolean;
+  };
+  error: {
+    countries?: string;
+    regions?: string;
+    cities?: string;
+  };
+}

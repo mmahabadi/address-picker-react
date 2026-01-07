@@ -1,11 +1,11 @@
-import { useAddressFormContext } from '../../contexts/AddressFormContext';
+import { useAddressFormContext } from '../../contexts';
 import { AddressForm } from '../AddressForm';
 import { AddressSummary } from '../AddressSummary';
 
 export function AddressPicker() {
-  const { isSubmitted: submittedData } = useAddressFormContext();
+  const { isSubmitted } = useAddressFormContext();
 
-  if (submittedData) {
+  if (isSubmitted) {
     return <AddressSummary />;
   }
 
