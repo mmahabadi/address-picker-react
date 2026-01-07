@@ -17,8 +17,8 @@ import com.github.mmahabadi.address.model.City;
 public class AddressController {
   private final AddressService addressService;
 
-  public AddressController() {
-    this.addressService = new AddressService();
+  public AddressController(AddressService addressService) {
+    this.addressService = addressService;
   }
 
   @GetMapping("/countries")
