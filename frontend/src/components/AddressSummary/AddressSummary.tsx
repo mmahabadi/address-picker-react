@@ -1,11 +1,19 @@
-import type { Address } from '../../types';
+import { useAddressFormContext } from '../../contexts/AddressFormContext';
+import { useAddressData } from '../../hooks/useAddressData';
 import './AddressSummary.css';
 
-interface AddressSummaryProps extends Address {
-  onEdit: () => void;
-}
+export function AddressSummary() {
+  const { country, region, city, addressDetails, setIsSubmitted } = useAddressFormContext();
+  const { countries, regions, cities } = useAddressData(country, region);
 
-export function AddressSummary({ country, region, city, addressDetails, onEdit }: AddressSummaryProps) {
+  const countryName = countries.find((c) => c.code === country)?.name || country;
+  const regionName = regions.find((r) => r.code === region)?.name || region;
+  const cityName = cities.find((c) => c.code === city)?.name || city;
+
+  const handleEdit = () => {
+    setIsSubmitted(false);
+  };
+
   return (
     <div className="summary-container">
       <h2 className="summary-title">Delivery Address</h2>
@@ -14,15 +22,15 @@ export function AddressSummary({ country, region, city, addressDetails, onEdit }
         <dl className="summary-list">
           <div className="summary-item">
             <dt>Country</dt>
-            <dd>{country}</dd>
+            <dd>{countryName}</dd>
           </div>
           <div className="summary-item">
             <dt>Region / Province</dt>
-            <dd>{region}</dd>
+            <dd>{regionName}</dd>
           </div>
           <div className="summary-item">
             <dt>City</dt>
-            <dd>{city}</dd>
+            <dd>{cityName}</dd>
           </div>
         </dl>
       </div>
@@ -48,7 +56,7 @@ export function AddressSummary({ country, region, city, addressDetails, onEdit }
         </dl>
       </div>
 
-      <button className="edit-button" onClick={onEdit}>
+      <button className="edit-button" onClick={handleEdit}>
         Edit Address
       </button>
     </div>

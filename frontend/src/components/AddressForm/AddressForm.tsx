@@ -1,33 +1,27 @@
-import { useRef } from 'react';
+import { useRef, type ChangeEvent } from 'react';
+import { useAddressFormContext } from '../../contexts/AddressFormContext';
 import { useAddressData } from '../../hooks/useAddressData';
-import { useFormState } from '../../hooks/useFormState';
 import { AddressDetailsForm } from '../AddressDetailsForm';
 import { Select } from '../Select';
 import './AddressForm.css';
-import type { Address } from '../../types';
 
-interface AddressFormProps {
-  onSubmit: (data: Address) => void;
-}
-
-export function AddressForm({ onSubmit }: AddressFormProps) {
+export function AddressForm() {
   const {
     country,
     region,
     city,
-    addressDetails,
-    handleCountryChange,
-    handleRegionChange,
-    handleCityChange,
-    handleAddressDetailsChange,
-  } = useFormState();
+    setCountry,
+    setRegion,
+    setCity,
+    setIsSubmitted,
+  } = useAddressFormContext();
   const { countries, regions, cities } = useAddressData(country, region);
   const form = useRef<HTMLFormElement>(null);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (form.current?.checkValidity()) {
-      onSubmit({ country, region, city, addressDetails });
+      setIsSubmitted(true);
     } else {
       form.current?.reportValidity();
     }
@@ -48,7 +42,7 @@ export function AddressForm({ onSubmit }: AddressFormProps) {
           id="country"
           name="country"
           value={country}
-          onChange={handleCountryChange}
+          onChange={(e: ChangeEvent<HTMLSelectElement>) => setCountry(e.target.value)}
           required
           options={countries.map((country) => ({
             value: country.code,
@@ -61,7 +55,7 @@ export function AddressForm({ onSubmit }: AddressFormProps) {
           id="region"
           name="region"
           value={region}
-          onChange={handleRegionChange}
+          onChange={(e: ChangeEvent<HTMLSelectElement>) => setRegion(e.target.value)}
           required
           options={regions.map((region) => ({
             value: region.code,
@@ -75,7 +69,7 @@ export function AddressForm({ onSubmit }: AddressFormProps) {
         id="city"
         name="city"
         value={city}
-        onChange={handleCityChange}
+        onChange={(e: ChangeEvent<HTMLSelectElement>) => setCity(e.target.value)}
         required
         options={cities.map((city) => ({
           value: city.code,
@@ -83,7 +77,7 @@ export function AddressForm({ onSubmit }: AddressFormProps) {
         }))}
       />
 
-      <AddressDetailsForm onChange={handleAddressDetailsChange} />
+      <AddressDetailsForm />
 
       <div className="form-action">
         <button

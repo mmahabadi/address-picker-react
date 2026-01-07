@@ -1,12 +1,19 @@
-import type { ChangeEvent } from 'react';
 import { Input } from "../Input";
+import { useAddressFormContext } from '../../contexts/AddressFormContext';
 import './AddressDetailsForm.css';
+import type { AddressDetails } from "../../types";
+import type { ChangeEvent } from 'react';
 
-interface AddressDetailsFormProps {
-  onChange: (e: ChangeEvent<HTMLInputElement>) => void;
-}
+export function AddressDetailsForm() {
+  const { addressDetails, setAddressDetails } = useAddressFormContext();
 
-export function AddressDetailsForm({ onChange }: AddressDetailsFormProps) {
+  const handleAddressDetailsChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setAddressDetails({
+      [name]: value,
+    } as Partial<AddressDetails>);
+  };
+
   return (
     <div className="details-form">
       <Input
@@ -16,7 +23,8 @@ export function AddressDetailsForm({ onChange }: AddressDetailsFormProps) {
         type="text"
         placeholder="Street name"
         required
-        onChange={onChange}
+        onChange={handleAddressDetailsChange}
+        value={addressDetails?.street}
       />
 
       <div className="details-grid">
@@ -27,7 +35,8 @@ export function AddressDetailsForm({ onChange }: AddressDetailsFormProps) {
             name="houseNumber"
             type="text"
             required
-            onChange={onChange}
+            onChange={handleAddressDetailsChange}
+            value={addressDetails?.houseNumber}
           />
         </div>
         <div>
@@ -36,7 +45,8 @@ export function AddressDetailsForm({ onChange }: AddressDetailsFormProps) {
             id="apartment"
             name="apartment"
             type="text"
-            onChange={onChange}
+            onChange={handleAddressDetailsChange}
+            value={addressDetails?.apartment}
           />
         </div>
         <div>
@@ -46,7 +56,8 @@ export function AddressDetailsForm({ onChange }: AddressDetailsFormProps) {
             name="postalCode"
             type="text"
             required
-            onChange={onChange}
+            onChange={handleAddressDetailsChange}
+            value={addressDetails?.postalCode}
           />
         </div>
       </div>
