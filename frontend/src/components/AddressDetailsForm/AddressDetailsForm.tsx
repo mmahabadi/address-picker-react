@@ -1,7 +1,7 @@
-import { Input } from "../Input";
+import { Input } from '../Input';
 import { useAddressFormContext } from '../../contexts/AddressFormContext';
 import './AddressDetailsForm.css';
-import type { AddressDetails } from "../../types";
+import type { AddressDetails } from '../../types';
 import type { ChangeEvent } from 'react';
 
 export function AddressDetailsForm() {

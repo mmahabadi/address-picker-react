@@ -8,9 +8,19 @@ interface SelectProps extends SelectHTMLAttributes<HTMLSelectElement> {
   errorMessage?: string;
 }
 
-export function Select({ label, name, id, required, disabled, onChange, options = [], errorMessage = 'Please select an option', className = '', ...props }: SelectProps) {
+export function Select({
+  label,
+  name,
+  id,
+  required,
+  disabled,
+  onChange,
+  options = [],
+  errorMessage = 'Please select an option',
+  className = '',
+  ...props
+}: SelectProps) {
   const [error, setError] = useState('');
-
 
   const handleInvalid = (e: FormEvent<HTMLSelectElement>) => {
     e.preventDefault();
@@ -43,7 +53,11 @@ export function Select({ label, name, id, required, disabled, onChange, options 
           </option>
         ))}
       </select>
-      {error && !disabled && <span id={`${id}-error`} className="error-message">{error}</span>}
+      {error && !disabled && (
+        <span id={`${id}-error`} className="error-message">
+          {error}
+        </span>
+      )}
     </div>
   );
 }

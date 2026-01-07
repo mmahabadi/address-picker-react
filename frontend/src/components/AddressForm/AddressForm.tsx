@@ -6,15 +6,8 @@ import { Select } from '../Select';
 import './AddressForm.css';
 
 export function AddressForm() {
-  const {
-    country,
-    region,
-    city,
-    setCountry,
-    setRegion,
-    setCity,
-    setIsSubmitted,
-  } = useAddressFormContext();
+  const { country, region, city, setCountry, setRegion, setCity, setIsSubmitted } =
+    useAddressFormContext();
   const { countries, regions, cities } = useAddressData(country, region);
   const form = useRef<HTMLFormElement>(null);
 
@@ -31,9 +24,7 @@ export function AddressForm() {
     <form ref={form} onSubmit={handleSubmit} className="form" noValidate>
       <div>
         <h2 className="form-title">Delivery address</h2>
-        <p className="form-description">
-          Use a permanent address where you can receive mail.
-        </p>
+        <p className="form-description">Use a permanent address where you can receive mail.</p>
       </div>
 
       <div className="form-grid">
@@ -80,11 +71,7 @@ export function AddressForm() {
       <AddressDetailsForm />
 
       <div className="form-action">
-        <button
-          type="submit"
-        >
-          Save address
-        </button>
+        <button type="submit">Save address</button>
       </div>
     </form>
   );

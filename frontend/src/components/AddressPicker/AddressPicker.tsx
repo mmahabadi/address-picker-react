@@ -6,12 +6,8 @@ export function AddressPicker() {
   const { isSubmitted: submittedData } = useAddressFormContext();
 
   if (submittedData) {
-    return (
-      <AddressSummary />
-    );
+    return <AddressSummary />;
   }
 
-  return (
-    <AddressForm />
-  );
+  return <AddressForm />;
 }

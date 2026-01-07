@@ -7,7 +7,15 @@ interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   errorMessage?: string;
 }
 
-export function Input({ label, id, onChange, required, errorMessage = 'Please fill out this field', className = '', ...props }: InputProps) {
+export function Input({
+  label,
+  id,
+  onChange,
+  required,
+  errorMessage = 'Please fill out this field',
+  className = '',
+  ...props
+}: InputProps) {
   const [error, setError] = useState('');
 
   const handleInvalid = (e: FormEvent<HTMLInputElement>) => {
@@ -33,7 +41,11 @@ export function Input({ label, id, onChange, required, errorMessage = 'Please fi
         required={required}
         {...props}
       />
-      {error && <span id={`${id}-error`} className="error-message">{error}</span>}
+      {error && (
+        <span id={`${id}-error`} className="error-message">
+          {error}
+        </span>
+      )}
     </div>
   );
 }

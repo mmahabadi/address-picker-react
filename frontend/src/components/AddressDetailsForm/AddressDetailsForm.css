@@ -8,6 +8,6 @@
   @apply grid grid-cols-3 gap-4;
 }
 
-.details-grid>div {
+.details-grid > div {
   @apply col-span-1;
 }

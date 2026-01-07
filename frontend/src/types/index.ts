@@ -3,7 +3,8 @@ interface Location {
   name: string;
 }
 
-export interface Country extends Location { }
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+export interface Country extends Location {}
 
 export interface Region extends Location {
   countryCode: string;
@@ -24,5 +25,5 @@ export interface Address {
   country: string;
   region: string;
   city: string;
-  addressDetails: AddressDetails
+  addressDetails: AddressDetails;
 }

@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react"
-import { getCities, getCountries, getRegions } from "../api/addressApi";
-import type { City, Country, Region } from "../types";
+import { useEffect, useState } from 'react';
+import { getCities, getCountries, getRegions } from '../api/addressApi';
+import type { City, Country, Region } from '../types';
 
 export const useAddressData = (country: string, region: string) => {
   const [countries, setCountries] = useState<Country[]>([]);
@@ -29,5 +29,5 @@ export const useAddressData = (country: string, region: string) => {
     countries,
     regions,
     cities,
-  }
-}
+  };
+};
