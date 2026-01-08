@@ -40,8 +40,8 @@ export const useCachedFetcher = <T>(): CachedFetcherResult<T> => {
     const cacheKey = generateCacheKey(url, options);
 
     // Step 1: Check cache first
-    const cachedData = cache.get(cacheKey);
-    if (cachedData !== undefined) {
+    if (cache.has(cacheKey)) {
+      const cachedData = cache.get(cacheKey);
       setData(cachedData as T);
       setLoading(false);
       return;
