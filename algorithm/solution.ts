@@ -7,7 +7,7 @@ const nodes = new Map<string, string[]>();
 
 for (const line of lines) {
   const [device, outputsString] = line.split(":");
-  const connectedNodes = outputsString.split(" ").filter((device) => !!device);
+  const connectedNodes = outputsString.trim().split(" ").filter((node) => !!node.trim());
   nodes.set(device, connectedNodes);
 }
 
