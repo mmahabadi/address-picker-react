@@ -1,73 +1,205 @@
-# React + TypeScript + Vite
+# Frontend - Address Picker React Application
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+React + TypeScript application implementing a delivery address picker component with a smart caching mechanism.
 
-Currently, two official plugins are available:
+## Overview
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+The frontend provides a user-friendly interface for selecting delivery addresses:
 
-## React Compiler
+- Country selection → Region selection → City selection → Address details
+- Smart caching to minimize backend API requests
+- Generic, reusable caching mechanism
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Features
 
-## Expanding the ESLint configuration
+- **Address Picker Flow**: Country → Region → City → Details
+- **Smart Caching**: Caches API responses to minimize backend requests
+- **Request Deduplication**: Prevents duplicate API calls
+- **Generic Cache**: Supports caching any data type
+- **Error Handling**: User-friendly error messages
+- **Responsive Design**: Works on all screen sizes
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+## Tech Stack
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+- **React** 19.2.0
+- **TypeScript** 5.9.3
+- **Vite** 7.2.4
+- **Tailwind CSS** 4.1.18
+- **Vitest** - Testing framework
+- **React Testing Library** - Component testing
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+## Getting Started
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+### Prerequisites
+
+- Node.js >= 20
+- npm or yarn
+
+### Installation
+
+```bash
+npm install
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+### Development
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+```bash
+npm run dev
+```
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
+The app will be available at http://localhost:5173
+
+### Build
+
+```bash
+npm run build
+```
+
+Output will be in the `dist/` directory.
+
+### Preview Production Build
+
+```bash
+npm run preview
+```
+
+## Project Structure
+
+```
+frontend/
+├── src/
+│   ├── assets/           # Static assets
+│   │   └── react.svg
+│   ├── components/       # React components
+│   │   ├── AddressPicker/
+│   │   ├── AddressForm/
+│   │   ├── AddressDetailsForm/
+│   │   ├── AddressSummary/
+│   │   ├── ErrorAlert/
+│   │   ├── Input/
+│   │   └── Select/
+│   ├── contexts/         # React context providers
+│   ├── hooks/            # Custom React hooks
+│   │   ├── useCachedFetcher.ts    # Generic caching hook
+│   │   ├── useAddressData.ts      # Address data hook
+│   ├── test/             # Test setup and mocks
+│   ├── utils/            # Utility functions
+│   │   ├── cache.ts      # Cache implementation
+│   │   ├── cacheKey.ts   # Cache key generation
+│   │   ├── requests.ts   # Request manager
+│   ├── types/            # TypeScript types
+│   ├── App.tsx           # Main app component
+│   ├── App.test.tsx      # App tests
+│   ├── main.tsx          # Entry point
+│   └── index.css         # Global styles
+├── public/               # Public static assets
+├── dist/                 # Build output
+├── Dockerfile            # Docker configuration
+├── nginx.conf            # Nginx configuration
+├── vite.config.ts        # Vite configuration
+├── vitest.config.ts      # Vitest configuration
+├── tsconfig.json         # TypeScript configuration
+├── eslint.config.js      # ESLint configuration
+└── package.json          # Dependencies and scripts
+```
+
+## Caching Mechanism
+
+The application implements a generic caching system with the following features:
+
+### Features
+
+- **TTL (Time To Live)**: Configurable cache expiration (default: 5 minutes)
+- **Request Deduplication**: Prevents duplicate requests for the same data
+- **Generic Support**: Can cache any data type, not just address data
+- **Automatic Cleanup**: Periodic cleanup of expired cache entries
+
+### Usage
+
+```typescript
+import { useCachedFetcher } from './hooks/useCachedFetcher';
+
+const { data, loading, error, fetchData } = useCachedFetcher<Country[]>();
+
+// Fetch data (automatically cached)
+await fetchData('/api/countries');
+```
+
+### Cache Configuration
+
+The cache is configured in `src/utils/cache.ts`:
+
+- Default TTL: 5 minutes
+- Automatic cleanup: Every 5 minutes
+- Storage: In-memory Map
+
+## API Integration
+
+The frontend communicates with the backend API:
+
+- `GET /api/countries` - Get all countries
+- `GET /api/countries/{countryCode}/regions` - Get regions for a country
+- `GET /api/regions/{regionCode}/cities` - Get cities for a region
+
+API calls are automatically cached and deduplicated.
+
+## Development Proxy
+
+In development mode, Vite proxies `/api` requests to `http://localhost:8080` (backend).
+
+Configuration in `vite.config.ts`:
+
+```typescript
+server: {
+  proxy: {
+    '/api': {
+      target: 'http://localhost:8080',
+      changeOrigin: true,
     },
   },
-])
+}
 ```
+
+## Testing
+
+### Run Tests
+
+```bash
+npm test
+```
+
+### Coverage
+
+```bash
+npm run test:coverage
+```
+
+## Docker
+
+### Build
+
+```bash
+docker build -t frontend .
+```
+
+### Run
+
+```bash
+docker run -p 5173:80 frontend
+```
+
+The Docker image uses nginx to serve the built application and proxy API requests to the backend.
+
+## Scripts
+
+- `npm run dev` - Start development server
+- `npm run build` - Build for production
+- `npm run preview` - Preview production build
+- `npm test` - Run tests
+- `npm run test:coverage` - Run tests with coverage
+- `npm run lint` - Run ESLint
+- `npm run format` - Format code with Prettier
+
+## License
+
+ISC
