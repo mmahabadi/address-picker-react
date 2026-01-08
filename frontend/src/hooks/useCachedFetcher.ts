@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { cache } from '../utils/cache';
 import { generateCacheKey } from '../utils/cacheKey';
 import { requestManager } from '../utils/requests';
@@ -21,14 +21,6 @@ export const useCachedFetcher = <T>(): CachedFetcherResult<T> => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
-
-  useEffect(() => {
-    return () => {
-      if (abortControllerRef.current) {
-        abortControllerRef.current.abort();
-      }
-    };
-  }, []);
 
   const fetchData = useCallback(async (url: string, options: RequestInit = {}) => {
     if (!url) {
