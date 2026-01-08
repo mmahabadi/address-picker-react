@@ -1,122 +1,147 @@
-import { renderHook, waitFor } from '@testing-library/react';
+import { renderHook } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { getCities, getCountries, getRegions } from '../api/addressApi';
 import { mockAddressDataValue } from '../test/mock';
 import { useAddressData } from './useAddressData';
 
-vi.mock('../api/addressApi', () => ({
-  getCountries: vi.fn(),
-  getRegions: vi.fn(),
-  getCities: vi.fn(),
+vi.mock('./useCachedFetcher', () => ({
+  useCachedFetcher: vi.fn(),
 }));
 
+import { useCachedFetcher } from './useCachedFetcher';
+
 describe('useAddressData', () => {
-  const mockGetCountries = vi.mocked(getCountries);
-  const mockGetRegions = vi.mocked(getRegions);
-  const mockGetCities = vi.mocked(getCities);
+  const mockUseCachedFetcher = vi.mocked(useCachedFetcher);
+
+  // Helper to mock all three useCachedFetcher calls
+  const mockAllFetchers = (
+    countries: Partial<ReturnType<typeof useCachedFetcher>> = {},
+    regions: Partial<ReturnType<typeof useCachedFetcher>> = {},
+    cities: Partial<ReturnType<typeof useCachedFetcher>> = {}
+  ) => {
+    const defaultMock = {
+      data: null,
+      loading: false,
+      error: null,
+      fetchData: vi.fn(),
+    };
+
+    mockUseCachedFetcher
+      .mockReturnValueOnce({ ...defaultMock, ...countries } as ReturnType<typeof useCachedFetcher>)
+      .mockReturnValueOnce({ ...defaultMock, ...regions } as ReturnType<typeof useCachedFetcher>)
+      .mockReturnValueOnce({ ...defaultMock, ...cities } as ReturnType<typeof useCachedFetcher>);
+  };
 
   beforeEach(() => {
     vi.clearAllMocks();
-    mockGetCountries.mockResolvedValue(mockAddressDataValue.countries);
-    mockGetRegions.mockResolvedValue(mockAddressDataValue.regions);
-    mockGetCities.mockResolvedValue(mockAddressDataValue.cities);
   });
 
-  describe('countries loading', () => {
-    it('should load countries on mount', async () => {
+  describe('countries', () => {
+    it('should fetch countries on mount', () => {
+      const mockFetchCountries = vi.fn();
+      mockAllFetchers({ fetchData: mockFetchCountries });
+
+      renderHook(() => useAddressData('', ''));
+
+      expect(mockFetchCountries).toHaveBeenCalledWith('/api/countries');
+    });
+
+    it('should return countries data', () => {
+      mockAllFetchers({ data: mockAddressDataValue.countries });
+
+      const { result } = renderHook(() => useAddressData('', ''));
+
+      expect(result.current.countries).toEqual(mockAddressDataValue.countries);
+    });
+
+    it('should return countries loading state', () => {
+      mockAllFetchers({ loading: true });
+
       const { result } = renderHook(() => useAddressData('', ''));
 
       expect(result.current.loading.countries).toBe(true);
-      expect(mockGetCountries).toHaveBeenCalledTimes(1);
-
-      await waitFor(() => {
-        expect(result.current.countries).toEqual(mockAddressDataValue.countries);
-      });
-
-      expect(result.current.loading.countries).toBe(false);
-      expect(result.current.error.countries).toBeUndefined();
     });
 
-    it('should handle countries loading/error', async () => {
+    it('should return countries error state', () => {
       const errorMessage = 'Failed to fetch countries';
-      mockGetCountries.mockRejectedValue(new Error(errorMessage));
+      mockAllFetchers({ error: errorMessage });
 
       const { result } = renderHook(() => useAddressData('', ''));
 
-      await waitFor(() => {
-        expect(result.current.error.countries).toBe(errorMessage);
-      });
-
-      expect(result.current.countries).toEqual([]);
-      expect(result.current.loading.countries).toBe(false);
+      expect(result.current.error.countries).toBe(errorMessage);
     });
   });
 
-  describe('regions loading', () => {
-    it('should not load regions when country is empty', () => {
-      const { result } = renderHook(() => useAddressData('', ''));
+  describe('regions', () => {
+    it('should not fetch regions when country is empty', () => {
+      const mockFetchRegions = vi.fn();
+      mockAllFetchers({}, { fetchData: mockFetchRegions });
 
-      expect(mockGetRegions).not.toHaveBeenCalled();
-      expect(result.current.regions).toEqual([]);
-      expect(result.current.loading.regions).toBe(false);
+      renderHook(() => useAddressData('', ''));
+
+      expect(mockFetchRegions).not.toHaveBeenCalled();
     });
 
-    it('should load regions when country is provided', async () => {
+    it('should fetch regions when country is provided', () => {
+      const mockFetchRegions = vi.fn();
+      mockAllFetchers({}, { fetchData: mockFetchRegions });
+
+      renderHook(() => useAddressData('NL', ''));
+
+      expect(mockFetchRegions).toHaveBeenCalledWith('/api/countries/NL/regions');
+    });
+
+    it('should return regions data', () => {
+      mockAllFetchers({}, { data: mockAddressDataValue.regions });
+
       const { result } = renderHook(() => useAddressData('NL', ''));
 
-      await waitFor(() => {
-        expect(result.current.regions).toEqual(mockAddressDataValue.regions);
-      });
-
-      expect(result.current.loading.regions).toBe(false);
-      expect(result.current.error.regions).toBeUndefined();
+      expect(result.current.regions).toEqual(mockAddressDataValue.regions);
     });
 
-    it('should handle regions loading/error', async () => {
+    it('should return regions error state', () => {
       const errorMessage = 'Failed to fetch regions';
-      mockGetRegions.mockRejectedValue(new Error(errorMessage));
+      mockAllFetchers({}, { error: errorMessage });
 
       const { result } = renderHook(() => useAddressData('NL', ''));
 
-      await waitFor(() => {
-        expect(result.current.error.regions).toBe(errorMessage);
-      });
-
-      expect(result.current.regions).toEqual([]);
-      expect(result.current.loading.regions).toBe(false);
+      expect(result.current.error.regions).toBe(errorMessage);
     });
   });
 
-  describe('cities loading', () => {
-    it('should not load cities when region is empty', () => {
-      const { result } = renderHook(() => useAddressData('NL', ''));
+  describe('cities', () => {
+    it('should not fetch cities when region is empty', () => {
+      const mockFetchCities = vi.fn();
+      mockAllFetchers({}, {}, { fetchData: mockFetchCities });
 
-      expect(mockGetCities).not.toHaveBeenCalled();
-      expect(result.current.cities).toEqual([]);
-      expect(result.current.loading.cities).toBe(false);
+      renderHook(() => useAddressData('NL', ''));
+
+      expect(mockFetchCities).not.toHaveBeenCalled();
     });
-    it('should load cities when region is provided', async () => {
+
+    it('should fetch cities when region is provided', () => {
+      const mockFetchCities = vi.fn();
+      mockAllFetchers({}, {}, { fetchData: mockFetchCities });
+
+      renderHook(() => useAddressData('NL', 'NL-NH'));
+
+      expect(mockFetchCities).toHaveBeenCalledWith('/api/regions/NL-NH/cities');
+    });
+
+    it('should return cities data', () => {
+      mockAllFetchers({}, {}, { data: mockAddressDataValue.cities });
+
       const { result } = renderHook(() => useAddressData('NL', 'NL-NH'));
 
-      await waitFor(() => {
-        expect(result.current.cities).toEqual(mockAddressDataValue.cities);
-      });
-
-      expect(result.current.loading.cities).toBe(false);
-      expect(result.current.error.cities).toBeUndefined();
+      expect(result.current.cities).toEqual(mockAddressDataValue.cities);
     });
-    it('should handle cities loading/error', async () => {
+
+    it('should return cities error state', () => {
       const errorMessage = 'Failed to fetch cities';
-      mockGetCities.mockRejectedValue(new Error(errorMessage));
+      mockAllFetchers({}, {}, { error: errorMessage });
 
       const { result } = renderHook(() => useAddressData('NL', 'NL-NH'));
 
-      await waitFor(() => {
-        expect(result.current.error.cities).toBe(errorMessage);
-      });
-
-      expect(result.current.cities).toEqual([]);
-      expect(result.current.loading.cities).toBe(false);
+      expect(result.current.error.cities).toBe(errorMessage);
     });
   });
 });

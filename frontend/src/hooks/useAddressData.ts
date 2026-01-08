@@ -1,66 +1,65 @@
-import { useEffect, useState } from 'react';
-import { getCities, getCountries, getRegions } from '../api/addressApi';
+import { useEffect, useMemo } from 'react';
 import type { AddressDataValues, City, Country, Region } from '../types';
-
-type DataType = 'countries' | 'regions' | 'cities';
+import { useCachedFetcher } from './useCachedFetcher';
 
 export const useAddressData = (country: string, region: string): AddressDataValues => {
-  const [countries, setCountries] = useState<Country[]>([]);
-  const [regions, setRegions] = useState<Region[]>([]);
-  const [cities, setCities] = useState<City[]>([]);
-  const [loading, setLoading] = useState({
-    countries: false,
-    regions: false,
-    cities: false,
-  });
-  const [error, setError] = useState<{
-    countries?: string;
-    regions?: string;
-    cities?: string;
-  }>({});
+  const {
+    data: countriesData,
+    loading: countriesLoading,
+    error: countriesError,
+    fetchData: fetchCountries,
+  } = useCachedFetcher<Country[]>();
+  const {
+    data: regionsData,
+    loading: regionsLoading,
+    error: regionsError,
+    fetchData: fetchRegions,
+  } = useCachedFetcher<Region[]>();
+  const {
+    data: citiesData,
+    loading: citiesLoading,
+    error: citiesError,
+    fetchData: fetchCities,
+  } = useCachedFetcher<City[]>();
 
-  const fetchData = async <T>(
-    type: DataType,
-    fetchFn: () => Promise<T[]>,
-    setData: (data: T[]) => void
-  ) => {
-    setLoading((prev) => ({ ...prev, [type]: true }));
-    try {
-      const data = await fetchFn();
-      setData(data);
-      setError((prev) => ({ ...prev, [type]: undefined }));
-    } catch (err) {
-      setError((prev) => ({ ...prev, [type]: (err as Error).message }));
-    } finally {
-      setLoading((prev) => ({ ...prev, [type]: false }));
-    }
-  };
+  const countries = useMemo(() => countriesData ?? [], [countriesData]);
+  const regions = useMemo(() => regionsData ?? [], [regionsData]);
+  const cities = useMemo(() => citiesData ?? [], [citiesData]);
 
-  const clearData = <T>(type: DataType, setData: (data: T[]) => void) => {
-    setData([]);
-    setError((prev) => ({ ...prev, [type]: undefined }));
-    setLoading((prev) => ({ ...prev, [type]: false }));
-  };
+  const loading = useMemo(
+    () => ({
+      countries: countriesLoading,
+      regions: regionsLoading,
+      cities: citiesLoading,
+    }),
+    [countriesLoading, regionsLoading, citiesLoading]
+  );
+  const error = useMemo(
+    () => ({
+      countries: countriesError ?? undefined,
+      regions: regionsError ?? undefined,
+      cities: citiesError ?? undefined,
+    }),
+    [countriesError, regionsError, citiesError]
+  );
 
   useEffect(() => {
-    fetchData<Country>('countries', getCountries, setCountries);
-  }, []);
+    fetchCountries('/api/countries');
+  }, [fetchCountries]);
 
   useEffect(() => {
     if (!country) {
-      clearData<Region>('regions', setRegions);
-    } else {
-      fetchData<Region>('regions', () => getRegions(country), setRegions);
+      return;
     }
-  }, [country]);
+    fetchRegions(`/api/countries/${country}/regions`);
+  }, [country, fetchRegions]);
 
   useEffect(() => {
     if (!region) {
-      clearData<City>('cities', setCities);
-    } else {
-      fetchData<City>('cities', () => getCities(region), setCities);
+      return;
     }
-  }, [region]);
+    fetchCities(`/api/regions/${region}/cities`);
+  }, [region, fetchCities]);
 
   return {
     countries,
