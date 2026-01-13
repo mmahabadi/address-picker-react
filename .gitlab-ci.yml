@@ -1,0 +1,252 @@
+# ============================================================================
+# GitLab CI/CD Pipeline Configuration
+# ============================================================================
+# This file defines the CI/CD pipeline for the address-picker-react project.
+# 
+# CONCEPTS:
+# - Stages: Define the order of execution (build, test, package, deploy)
+# - Jobs: Individual tasks that run in a stage
+# - Runners: Machines that execute the jobs (GitLab provides shared runners)
+#
+# PIPELINE FLOW:
+# 1. Build stage: Compile frontend and backend
+# 2. Test stage: Run tests for both services
+# 3. Package stage: Build Docker images
+# 4. Deploy stage: Push images to registry (optional)
+# ============================================================================
+
+# Define the stages (order matters - they run sequentially)
+stages:
+  - build
+  - test
+  - package
+  - deploy
+
+# ============================================================================
+# VARIABLES
+# ============================================================================
+# Variables can be used across all jobs
+variables:
+  # Docker image names
+  FRONTEND_IMAGE: $CI_REGISTRY_IMAGE/frontend
+  BACKEND_IMAGE: $CI_REGISTRY_IMAGE/backend
+  # Use Docker-in-Docker service
+  DOCKER_DRIVER: overlay2
+  DOCKER_TLS_CERTDIR: "/certs"
+
+# ============================================================================
+# BUILD STAGE
+# ============================================================================
+
+# Frontend Build Job
+# This job installs dependencies and builds the React application
+frontend:build:
+  stage: build
+  image: node:20  # Use Node.js 20 (matches your package.json requirement)
+  cache:
+    key: frontend-node-modules
+    paths:
+      - frontend/node_modules/  # Cache node_modules for faster builds
+  script:
+    - cd frontend
+    - echo "Installing frontend dependencies..."
+    - npm ci  # ci is faster and more reliable than npm install for CI
+    - echo "Building frontend..."
+    - npm run build
+  artifacts:
+    paths:
+      - frontend/dist/  # Save build output for later stages
+    expire_in: 1 hour  # Artifacts expire after 1 hour
+  only:
+    - main
+    - develop
+    - merge_requests
+
+# Backend Build Job
+# This job compiles the Java/Spring Boot application
+backend:build:
+  stage: build
+  image: maven:3.9-eclipse-temurin-17  # Maven with Java 17
+  cache:
+    key: backend-maven-cache
+    paths:
+      - backend/.m2/repository/  # Cache Maven dependencies
+  script:
+    - cd backend
+    - echo "Building backend with Maven..."
+    - mvn clean compile -DskipTests  # Compile but skip tests (tests run in test stage)
+  artifacts:
+    paths:
+      - backend/target/*.jar  # Save compiled JAR files
+    expire_in: 1 hour
+  only:
+    - main
+    - develop
+    - merge_requests
+
+# ============================================================================
+# TEST STAGE
+# ============================================================================
+
+# Frontend Tests
+# Runs unit tests for the React application
+frontend:test:
+  stage: test
+  image: node:20
+  cache:
+    key: frontend-node-modules
+    paths:
+      - frontend/node_modules/
+  dependencies:
+    - frontend:build  # This job depends on frontend:build completing
+  script:
+    - cd frontend
+    - echo "Running frontend tests..."
+    - npm ci
+    - npm run test -- --run  # Run tests once (not in watch mode)
+  coverage: '/Lines\s*:\s*(\d+\.\d+)%/'
+  artifacts:
+    reports:
+      junit: frontend/test-results/junit.xml  # Test reports for GitLab UI
+    paths:
+      - frontend/coverage/  # Coverage reports
+    expire_in: 1 week
+  only:
+    - main
+    - develop
+    - merge_requests
+
+# Frontend Lint
+# Checks code quality and formatting
+frontend:lint:
+  stage: test
+  image: node:20
+  cache:
+    key: frontend-node-modules
+    paths:
+      - frontend/node_modules/
+  script:
+    - cd frontend
+    - echo "Linting frontend code..."
+    - npm ci
+    - npm run lint
+    - npm run format:check  # Check code formatting
+  only:
+    - main
+    - develop
+    - merge_requests
+
+# Backend Tests
+# Runs unit tests for the Spring Boot application
+backend:test:
+  stage: test
+  image: maven:3.9-eclipse-temurin-17
+  cache:
+    key: backend-maven-cache
+    paths:
+      - backend/.m2/repository/
+  dependencies:
+    - backend:build  # Depends on backend:build
+  script:
+    - cd backend
+    - echo "Running backend tests..."
+    - mvn test  # Run all tests
+  artifacts:
+    reports:
+      junit: backend/target/surefire-reports/TEST-*.xml  # Test reports
+    expire_in: 1 week
+  only:
+    - main
+    - develop
+    - merge_requests
+
+# ============================================================================
+# PACKAGE STAGE
+# ============================================================================
+# Build Docker images for both services
+
+# Docker Build Service
+# This service allows us to build Docker images inside the CI job
+services:
+  - docker:24-dind  # Docker-in-Docker service
+
+# Frontend Docker Build
+frontend:docker:
+  stage: package
+  image: docker:24
+  dependencies:
+    - frontend:build  # Need the build artifacts
+  before_script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+  script:
+    - cd frontend
+    - echo "Building frontend Docker image..."
+    - |
+      docker build \
+        -t $FRONTEND_IMAGE:$CI_COMMIT_SHORT_SHA \
+        -t $FRONTEND_IMAGE:latest \
+        .
+    - echo "Pushing frontend image to registry..."
+    - docker push $FRONTEND_IMAGE:$CI_COMMIT_SHORT_SHA
+    - docker push $FRONTEND_IMAGE:latest
+  only:
+    - main
+    - develop
+
+# Backend Docker Build
+backend:docker:
+  stage: package
+  image: docker:24
+  dependencies:
+    - backend:build  # Need the build artifacts
+  before_script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+  script:
+    - cd backend
+    - echo "Building backend Docker image..."
+    - |
+      docker build \
+        -t $BACKEND_IMAGE:$CI_COMMIT_SHORT_SHA \
+        -t $BACKEND_IMAGE:latest \
+        .
+    - echo "Pushing backend image to registry..."
+    - docker push $BACKEND_IMAGE:$CI_COMMIT_SHORT_SHA
+    - docker push $BACKEND_IMAGE:latest
+  only:
+    - main
+    - develop
+
+# ============================================================================
+# DEPLOY STAGE (Optional - for future use)
+# ============================================================================
+# This stage would deploy to Kubernetes, but we'll implement that in later modules
+
+# Example deploy job (commented out for now)
+# deploy:staging:
+#   stage: deploy
+#   image: bitnami/kubectl:latest
+#   script:
+#     - echo "Deploying to staging..."
+#     - kubectl apply -f k8s/
+#   environment:
+#     name: staging
+#     url: https://staging.example.com
+#   only:
+#     - develop
+#   when: manual  # Manual deployment
+
+# ============================================================================
+# HELPER JOBS
+# ============================================================================
+
+# Job that runs on all branches to validate the pipeline
+validate:pipeline:
+  stage: build
+  image: alpine:latest
+  script:
+    - echo "Pipeline validation passed!"
+    - echo "Branch: $CI_COMMIT_REF_NAME"
+    - echo "Commit: $CI_COMMIT_SHORT_SHA"
+  only:
+    - branches
+    - tags
