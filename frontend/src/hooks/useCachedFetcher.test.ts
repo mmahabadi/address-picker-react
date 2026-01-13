@@ -7,6 +7,7 @@ import { useCachedFetcher } from './useCachedFetcher';
 vi.mock('../utils/cache', () => ({
   cache: {
     get: vi.fn(),
+    has: vi.fn(),
   },
 }));
 
@@ -53,6 +54,7 @@ describe('useCachedFetcher', () => {
   it('should return cached data without making a request', async () => {
     const cachedData = { id: 1, name: 'Cached Item' };
     mockCache.get.mockReturnValue(cachedData);
+    mockCache.has.mockReturnValue(true);
 
     const { result } = renderHook(() => useCachedFetcher<unknown>());
 
@@ -71,6 +73,7 @@ describe('useCachedFetcher', () => {
   it('should make request when cached value is undefined', async () => {
     const responseData = { id: 1, name: 'Fresh Data' };
     mockCache.get.mockReturnValue(undefined);
+    mockCache.has.mockReturnValue(false);
     mockRequestManager.createFetchRequest.mockResolvedValue(responseData);
 
     const { result } = renderHook(() => useCachedFetcher<unknown>());
