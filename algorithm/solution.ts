@@ -30,12 +30,18 @@ function findPaths(currentNode: string, currentPath: string[]): string[] {
   return paths;
 }
 
+const memo = new Map<string, number>();
+
 /**
  * use this function to count the number of paths from a node to the "out" node
  * @returns the number of paths
  */
 function countPaths(currentNode: string): number {
   if (currentNode === "out") return 1;
+
+  if(memo.has(currentNode)) {
+    return memo.get(currentNode)!;
+  }
 
   let count = 0;
   const connectedNodes = nodes.get(currentNode) || [];
@@ -44,10 +50,12 @@ function countPaths(currentNode: string): number {
     count += countPaths(connectedNode);
   }
 
+  memo.set(currentNode, count);
   return count;
 }
-
+console.time("countPaths");
 const pathCount = countPaths("you");
+console.timeEnd("countPaths");
 console.log(
   `there are ${pathCount} different paths leading from \`you\` to \`out\`.`
 );
