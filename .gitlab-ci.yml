@@ -57,10 +57,10 @@ frontend:build:
     paths:
       - frontend/dist/  # Save build output for later stages
     expire_in: 1 hour  # Artifacts expire after 1 hour
-  only:
-    - main
-    - develop
-    - merge_requests
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH == "main"
+    - if: $CI_COMMIT_BRANCH == "develop"
 
 # Backend Build Job
 # This job compiles the Java/Spring Boot application
@@ -79,10 +79,10 @@ backend:build:
     paths:
       - backend/target/*.jar  # Save compiled JAR files
     expire_in: 1 hour
-  only:
-    - main
-    - develop
-    - merge_requests
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH == "main"
+    - if: $CI_COMMIT_BRANCH == "develop"
 
 # ============================================================================
 # TEST STAGE
@@ -111,10 +111,10 @@ frontend:test:
     paths:
       - frontend/coverage/  # Coverage reports
     expire_in: 1 week
-  only:
-    - main
-    - develop
-    - merge_requests
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH == "main"
+    - if: $CI_COMMIT_BRANCH == "develop"
 
 # Frontend Lint
 # Checks code quality and formatting
@@ -131,10 +131,10 @@ frontend:lint:
     - npm ci
     - npm run lint
     - npm run format:check  # Check code formatting
-  only:
-    - main
-    - develop
-    - merge_requests
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH == "main"
+    - if: $CI_COMMIT_BRANCH == "develop"
 
 # Backend Tests
 # Runs unit tests for the Spring Boot application
@@ -155,10 +155,10 @@ backend:test:
     reports:
       junit: backend/target/surefire-reports/TEST-*.xml  # Test reports
     expire_in: 1 week
-  only:
-    - main
-    - develop
-    - merge_requests
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH == "main"
+    - if: $CI_COMMIT_BRANCH == "develop"
 
 # ============================================================================
 # PACKAGE STAGE
@@ -189,9 +189,9 @@ frontend:docker:
     - echo "Pushing frontend image to registry..."
     - docker push $FRONTEND_IMAGE:$CI_COMMIT_SHORT_SHA
     - docker push $FRONTEND_IMAGE:latest
-  only:
-    - main
-    - develop
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+    - if: $CI_COMMIT_BRANCH == "develop"
 
 # Backend Docker Build
 backend:docker:
@@ -212,9 +212,9 @@ backend:docker:
     - echo "Pushing backend image to registry..."
     - docker push $BACKEND_IMAGE:$CI_COMMIT_SHORT_SHA
     - docker push $BACKEND_IMAGE:latest
-  only:
-    - main
-    - develop
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+    - if: $CI_COMMIT_BRANCH == "develop"
 
 # ============================================================================
 # DEPLOY STAGE (Optional - for future use)
@@ -247,6 +247,6 @@ validate:pipeline:
     - echo "Pipeline validation passed!"
     - echo "Branch: $CI_COMMIT_REF_NAME"
     - echo "Commit: $CI_COMMIT_SHORT_SHA"
-  only:
-    - branches
-    - tags
+  rules:
+    - if: $CI_COMMIT_BRANCH
+    - if: $CI_COMMIT_TAG
