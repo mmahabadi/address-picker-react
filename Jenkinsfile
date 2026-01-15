@@ -58,7 +58,9 @@ pipeline {
         GIT_COMMIT_SHORT = ''
         // macOS homebrew paths are often missing from Jenkins' PATH when Jenkins runs as a service.
         // This helps Jenkins find node/npm/mvn installed via Homebrew.
-        EXTRA_PATH = '/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin'
+        EXTRA_PATH = '/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin',
+
+        JDK17_HOME = '/opt/homebrew/opt/openjdk@17'
     }
     
     // Options: Pipeline-wide settings
@@ -186,7 +188,9 @@ pipeline {
                     steps {
                         dir('backend') {
                             script {
-                                withEnv(["PATH=${EXTRA_PATH}:${env.PATH ?: ''}"]) {
+                                withEnv([
+                                    "JAVA_HOME=${JDK17_HOME}",
+                                    "PATH=${EXTRA_PATH}:${env.PATH ?: ''}"]) {
                                 echo "Compiling Spring Boot application..."
                                 sh 'mvn -B clean compile -DskipTests'
                                 }
