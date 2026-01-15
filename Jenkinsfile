@@ -56,6 +56,9 @@ pipeline {
     environment {
         // populated after checkout
         GIT_COMMIT_SHORT = ''
+        // macOS homebrew paths are often missing from Jenkins' PATH when Jenkins runs as a service.
+        // This helps Jenkins find node/npm/mvn installed via Homebrew.
+        EXTRA_PATH = '/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin'
     }
     
     // Options: Pipeline-wide settings
@@ -67,6 +70,8 @@ pipeline {
         // Add timestamps to console output
         timestamps()
         // Note: no GitLab/Jenkins integration required for local Jenkins + GitHub
+        // Avoid Jenkins doing an automatic checkout before our own Checkout stage.
+        skipDefaultCheckout(true)
     }
     
     // Stages: Define the pipeline flow
@@ -76,6 +81,8 @@ pipeline {
         // ====================================================================
         stage('Checkout') {
             steps {
+                // Ensure our PATH includes common locations for locally installed tools
+                withEnv(["PATH=${EXTRA_PATH}:${env.PATH ?: ''}"]) {
                 script {
                     if (params.GIT_URL?.trim()) {
                         def cfg = [
@@ -95,6 +102,50 @@ pipeline {
                     env.GIT_COMMIT_SHORT = sh(script: 'git rev-parse --short HEAD', returnStdout: true).trim()
                     echo "Commit: ${env.GIT_COMMIT_SHORT}"
                 }
+                }
+            }
+        }
+
+        stage('Prerequisites') {
+            steps {
+                withEnv(["PATH=${EXTRA_PATH}:${env.PATH ?: ''}"]) {
+                    sh '''
+                      set -eu
+                      echo "PATH=$PATH"
+
+                      echo "Checking required tools..."
+                      command -v git >/dev/null 2>&1 || { echo "ERROR: git not found in PATH"; exit 1; }
+                      command -v java >/dev/null 2>&1 || { echo "ERROR: java not found in PATH"; exit 1; }
+
+                      if ! command -v node >/dev/null 2>&1; then
+                        echo "ERROR: node not found in PATH (Jenkins user can't see Node.js)."
+                        echo "Fix (macOS/homebrew): install Node and ensure Jenkins PATH includes /opt/homebrew/bin"
+                        echo "  brew install node"
+                        exit 1
+                      fi
+
+                      if ! command -v npm >/dev/null 2>&1; then
+                        echo "ERROR: npm not found in PATH."
+                        echo "Fix: Node.js install provides npm. Reinstall Node:"
+                        echo "  brew install node"
+                        exit 1
+                      fi
+
+                      if ! command -v mvn >/dev/null 2>&1; then
+                        echo "ERROR: mvn not found in PATH (Jenkins user can't see Maven)."
+                        echo "Fix (macOS/homebrew):"
+                        echo "  brew install maven"
+                        exit 1
+                      fi
+
+                      echo "Tool versions:"
+                      git --version
+                      java -version
+                      node --version
+                      npm --version
+                      mvn -version
+                    '''
+                }
             }
         }
         
@@ -109,12 +160,13 @@ pipeline {
                     steps {
                         dir('frontend') {
                             script {
-                                sh 'node --version || true'
-                                sh 'npm --version || true'
+                                // Ensure Jenkins can find node/npm
+                                withEnv(["PATH=${EXTRA_PATH}:${env.PATH ?: ''}"]) {
                                 echo "Installing dependencies..."
                                 sh 'npm ci'
                                 echo "Building React application..."
                                 sh 'npm run build'
+                                }
                             }
                         }
                     }
@@ -134,10 +186,10 @@ pipeline {
                     steps {
                         dir('backend') {
                             script {
-                                sh 'java -version || true'
-                                sh 'mvn -version || true'
+                                withEnv(["PATH=${EXTRA_PATH}:${env.PATH ?: ''}"]) {
                                 echo "Compiling Spring Boot application..."
                                 sh 'mvn clean compile -DskipTests'
+                                }
                             }
                         }
                     }
@@ -164,9 +216,11 @@ pipeline {
                     steps {
                         dir('frontend') {
                             script {
+                                withEnv(["PATH=${EXTRA_PATH}:${env.PATH ?: ''}"]) {
                                 echo "Running frontend tests..."
                                 sh 'npm ci'
                                 sh 'npm run test -- --run'
+                                }
                             }
                         }
                     }
@@ -185,10 +239,12 @@ pipeline {
                     steps {
                         dir('frontend') {
                             script {
+                                withEnv(["PATH=${EXTRA_PATH}:${env.PATH ?: ''}"]) {
                                 echo "Linting frontend code..."
                                 sh 'npm ci'
                                 sh 'npm run lint'
                                 sh 'npm run format:check'
+                                }
                             }
                         }
                     }
@@ -199,8 +255,10 @@ pipeline {
                     steps {
                         dir('backend') {
                             script {
+                                withEnv(["PATH=${EXTRA_PATH}:${env.PATH ?: ''}"]) {
                                 echo "Running backend tests..."
                                 sh 'mvn test'
+                                }
                             }
                         }
                     }
