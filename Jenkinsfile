@@ -161,7 +161,7 @@ pipeline {
                         dir('frontend') {
                             script {
                                 // Ensure Jenkins can find node/npm
-                                withEnv(["PATH=${EXTRA_PATH}:${env.PATH ?: ''}"]) {
+                                withEnv(["PATH=${EXTRA_PATH}:${env.PATH ?: ''}", "HUSKY=0"]) {
                                 echo "Installing dependencies..."
                                 sh 'npm ci'
                                 echo "Building React application..."
@@ -188,7 +188,7 @@ pipeline {
                             script {
                                 withEnv(["PATH=${EXTRA_PATH}:${env.PATH ?: ''}"]) {
                                 echo "Compiling Spring Boot application..."
-                                sh 'mvn clean compile -DskipTests'
+                                sh 'mvn -B clean compile -DskipTests'
                                 }
                             }
                         }
