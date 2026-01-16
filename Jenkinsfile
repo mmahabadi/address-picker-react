@@ -49,7 +49,7 @@ pipeline {
 
   environment {
     // Ensure Jenkins (service user) can find Homebrew-installed tools
-    EXTRA_PATH = '/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin'
+    EXTRA_PATH = '/opt/homebrew/opt/node@22/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin'
 
     // Force Maven to use JDK 17 (avoids Lombok/javac issues on newer Java)
     JDK17_HOME = '/opt/homebrew/opt/openjdk@17'
@@ -153,14 +153,18 @@ pipeline {
       // Test the frontend and backend in parallel
       parallel {
         // Test the frontend
-        stage('Test Frontend') {
+        stage('Test Frontend + Lint') {
           steps {
             dir('frontend') {
               // Set the path to the frontend
-              withEnv(["PATH=${EXTRA_PATH}:${env.PATH ?: ''}", "HUSKY=0"]) {
+              withEnv(["PATH=${EXTRA_PATH}:${env.PATH ?: ''}"]) {
                 sh 'npm ci'
                 // Test the frontend
                 sh 'npm run test -- --run'
+                // Lint the frontend
+                sh 'npm run lint'
+                // Check the frontend formatting
+                sh 'npm run format:check'
               }
             }
           }
@@ -169,21 +173,6 @@ pipeline {
               // Archive the frontend coverage
               junit 'frontend/test-results/junit.xml'
               archiveArtifacts artifacts: 'frontend/coverage/**', allowEmptyArchive: true
-            }
-          }
-        }
-
-        // Lint the frontend
-        stage('Lint Frontend') {
-          steps {
-            dir('frontend') {
-              withEnv(["PATH=${EXTRA_PATH}:${env.PATH ?: ''}", "HUSKY=0"]) {
-                sh 'npm ci'
-                // Lint the frontend
-                sh 'npm run lint'
-                // Check the frontend formatting
-                sh 'npm run format:check'
-              }
             }
           }
         }
