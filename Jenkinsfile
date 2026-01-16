@@ -199,6 +199,33 @@ pipeline {
         }
       }
     }
+
+    stage('Package (Docker Hub)') {
+        steps {
+            script {
+                def tag = env.GIT_COMMIT_SHORT ?: 'local'
+                // change these to your Docker Hub namespace + image names
+                def FE_IMAGE = "docker.io/mehabadi/test:frontend-${tag}"
+                def BE_IMAGE = "docker.io/mehabadi/test:backend-${tag}"
+
+                sh 'docker version'
+
+                withCredentials([usernamePassword(
+                    credentialsId: 'docker-hub',
+                    usernameVariable: 'DOCKER_USER',
+                    passwordVariable: 'DOCKER_PASS'
+                )]) {
+                    sh 'echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin'
+                }
+
+                sh "docker build -t ${FE_IMAGE} ./frontend"
+                sh "docker build -t ${BE_IMAGE} ./backend"
+
+                sh "docker push ${FE_IMAGE}"
+                sh "docker push ${BE_IMAGE}"
+            }
+        }
+    }
   }
 
   post {
