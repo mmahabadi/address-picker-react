@@ -56,6 +56,8 @@ pipeline {
 
     // Filled after checkout
     GIT_COMMIT_SHORT = ''
+
+    HUSKY = '0'
   }
 
   stages {
@@ -108,7 +110,7 @@ pipeline {
           steps {
             dir('frontend') {
               // Set the path to the frontend
-              withEnv(["PATH=${EXTRA_PATH}:${env.PATH ?: ''}", "HUSKY=0"]) {
+              withEnv(["PATH=${EXTRA_PATH}:${env.PATH ?: ''}"]) {
                 sh 'npm ci'
                 // Build the frontend
                 sh 'npm run build'
