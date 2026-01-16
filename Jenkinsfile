@@ -75,7 +75,7 @@ pipeline {
     }
     stage('Prerequisites') {
       // Check if the prerequisites are met
-      steps {
+      steps { 
         withEnv([
           "JAVA_HOME=${JDK17_HOME}",
           "PATH=${JDK17_HOME}/bin:${EXTRA_PATH}:${env.PATH ?: ''}"
