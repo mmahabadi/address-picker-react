@@ -72,7 +72,7 @@ pipeline {
             }
             }
         }
-    }
+    } 
     stage('Prerequisites') {
       // Check if the prerequisites are met
       steps { 
