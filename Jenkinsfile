@@ -80,7 +80,7 @@ pipeline {
           "JAVA_HOME=${JDK17_HOME}",
           "PATH=${JDK17_HOME}/bin:${EXTRA_PATH}:${env.PATH ?: ''}"
         ]) {
-          sh ''' // This is a bash script to check if the prerequisites are met
+          sh ''' 
             set -eu
             echo "PATH=$PATH"
             echo "JAVA_HOME=$JAVA_HOME"
