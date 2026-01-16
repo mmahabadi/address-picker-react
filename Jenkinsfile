@@ -89,7 +89,7 @@ pipeline {
             command -v node
             command -v npm
             command -v mvn
-
+ 
             git --version
             node --version
             npm --version
