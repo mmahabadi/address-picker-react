@@ -49,7 +49,7 @@ pipeline {
 
   environment {
     // Ensure Jenkins (service user) can find Homebrew-installed tools
-    EXTRA_PATH = '/opt/homebrew/opt/node@22/bin:/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin'
+    EXTRA_PATH = '/opt/homebrew/opt/node@22/bin:/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/Applications/Docker.app/Contents/Resources/bin'
 
     // Force Maven to use JDK 17 (avoids Lombok/javac issues on newer Java)
     JDK17_HOME = '/opt/homebrew/opt/openjdk@17'
