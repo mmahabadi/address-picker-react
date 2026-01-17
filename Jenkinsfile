@@ -205,9 +205,7 @@ pipeline {
             withEnv(["PATH=${EXTRA_PATH}:${env.PATH ?: ''}"]) {
                 script {
                     def tag = env.GIT_COMMIT_SHORT ?: 'local'
-                    // change these to your Docker Hub namespace + image names
-                    def FE_IMAGE = "docker.io/mehabadi/test:frontend"
-                    def BE_IMAGE = "docker.io/mehabadi/test:backend"
+                    def REPO = "docker.io/mehabadi/test"
 
                     sh 'docker version'
 
@@ -219,13 +217,11 @@ pipeline {
                         sh 'echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin'
                     }
 
-                    sh "docker build -t ${FE_IMAGE}:${tag} -t ${FE_IMAGE}:latest ./frontend"
-                    sh "docker build -t ${BE_IMAGE}:${tag} -t ${BE_IMAGE}:latest ./backend"
+                    sh "docker build -t ${REPO}:frontend-${tag} -t ${REPO}:frontend-latest ./frontend"
+                    sh "docker build -t ${REPO}:backend-${tag} -t ${REPO}:backend-latest ./backend"
 
-                    sh "docker push ${FE_IMAGE}:${tag}"
-                    sh "docker push ${FE_IMAGE}:latest"
-                    sh "docker push ${BE_IMAGE}:${tag}"
-                    sh "docker push ${BE_IMAGE}:latest"
+                    sh "docker push ${REPO}:frontend-${tag} && docker push ${REPO}:frontend-latest"
+                    sh "docker push ${REPO}:backend-${tag} && docker push ${REPO}:backend-latest"
                 }
             }
         }
