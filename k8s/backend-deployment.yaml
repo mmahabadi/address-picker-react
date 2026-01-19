@@ -1,0 +1,66 @@
+# =============================================================================
+# Deployment: Backend (Spring Boot API)
+# =============================================================================
+# A Deployment manages a set of identical Pods:
+#   - Ensures the desired number of replicas are always running
+#   - Handles rolling updates (zero-downtime deployments)
+#   - Self-heals by recreating failed Pods
+#
+# This backend exposes:
+#   - GET /api/countries
+#   - GET /api/countries/{code}/regions
+#   - GET /api/regions/{code}/cities
+# =============================================================================
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend-deployment
+  namespace: address-picker
+  labels:
+    app: backend              # Labels for organizing/selecting this resource
+spec:
+  replicas: 1                 # Number of Pod instances to run
+  
+  # Selector: how the Deployment finds Pods it manages
+  selector:
+    matchLabels:
+      app: backend            # Must match template.metadata.labels
+  
+  # Pod template: defines what each Pod looks like
+  template:
+    metadata:
+      labels:
+        app: backend          # Must match selector.matchLabels
+    spec:
+      # Credentials for pulling images from private Docker Hub repo
+      imagePullSecrets:
+        - name: docker-registry-secret
+      
+      containers:
+        - name: backend
+          image: docker.io/mehabadi/test:backend-latest
+          ports:
+            - containerPort: 8080   # Port the container listens on
+          
+          # Resource limits (recommended for production)
+          # resources:
+          #   requests:
+          #     memory: "256Mi"
+          #     cpu: "250m"
+          #   limits:
+          #     memory: "512Mi"
+          #     cpu: "500m"
+          
+          # Health checks (recommended for production)
+          # livenessProbe:
+          #   httpGet:
+          #     path: /actuator/health
+          #     port: 8080
+          #   initialDelaySeconds: 30
+          #   periodSeconds: 10
+          # readinessProbe:
+          #   httpGet:
+          #     path: /actuator/health
+          #     port: 8080
+          #   initialDelaySeconds: 10
+          #   periodSeconds: 5

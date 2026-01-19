@@ -1,0 +1,49 @@
+# =============================================================================
+# ConfigMap: Non-sensitive configuration data
+# =============================================================================
+# ConfigMaps store configuration separately from container images, enabling:
+#   - Environment-specific config (dev, staging, prod)
+#   - Config changes without rebuilding images
+#   - Sharing config between multiple Pods
+#
+# USAGE IN PODS:
+#   1. As environment variables:
+#      env:
+#        - name: SPRING_PROFILES_ACTIVE
+#          valueFrom:
+#            configMapKeyRef:
+#              name: app-config
+#              key: spring.profile
+#
+#   2. As mounted files:
+#      volumes:
+#        - name: config-volume
+#          configMap:
+#            name: app-config
+#      volumeMounts:
+#        - name: config-volume
+#          mountPath: /etc/config
+#
+# NOTE: For sensitive data (passwords, tokens), use Secrets instead.
+# =============================================================================
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: app-config
+  namespace: address-picker
+  labels:
+    app: address-picker
+data:
+  # Backend Spring Boot configuration
+  # Can be mounted to /config/application.properties
+  backend.properties: |
+    spring.application.name=backend
+    server.port=8080
+    logging.level.root=INFO
+  
+  # Frontend environment configuration
+  # Note: React apps are built at compile time, so this is mainly for reference
+  # or for server-side rendering scenarios
+  frontend.env: |
+    NODE_ENV=production
+    REACT_APP_API_URL=http://backend:8080/api

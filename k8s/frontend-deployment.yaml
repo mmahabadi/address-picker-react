@@ -1,0 +1,66 @@
+# =============================================================================
+# Deployment: Frontend (React + Nginx)
+# =============================================================================
+# This Deployment runs the React frontend served by Nginx.
+# Nginx handles:
+#   - Serving static files (React build output)
+#   - Proxying /api requests to the backend service
+#   - Gzip compression and caching headers
+#
+# The nginx.conf inside the container routes:
+#   - /          → serves static React files
+#   - /api/*     → proxies to http://backend:8080/api/*
+# =============================================================================
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend-deployment
+  namespace: address-picker
+  labels:
+    app: frontend
+spec:
+  replicas: 1                 # Number of Pod instances
+  
+  # Selector: how the Deployment finds Pods it manages
+  selector:
+    matchLabels:
+      app: frontend
+  
+  # Pod template
+  template:
+    metadata:
+      labels:
+        app: frontend         # Must match selector.matchLabels
+    spec:
+      # Credentials for pulling images from private Docker Hub repo
+      imagePullSecrets:
+        - name: docker-registry-secret
+      
+      containers:
+        - name: frontend
+          image: docker.io/mehabadi/test:frontend-latest
+          ports:
+            - containerPort: 80     # Nginx listens on port 80
+          
+          # Resource limits (recommended for production)
+          # resources:
+          #   requests:
+          #     memory: "64Mi"
+          #     cpu: "100m"
+          #   limits:
+          #     memory: "128Mi"
+          #     cpu: "200m"
+          
+          # Health checks (recommended for production)
+          # livenessProbe:
+          #   httpGet:
+          #     path: /
+          #     port: 80
+          #   initialDelaySeconds: 10
+          #   periodSeconds: 10
+          # readinessProbe:
+          #   httpGet:
+          #     path: /
+          #     port: 80
+          #   initialDelaySeconds: 5
+          #   periodSeconds: 5

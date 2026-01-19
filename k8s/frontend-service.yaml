@@ -1,0 +1,34 @@
+# =============================================================================
+# Service: Frontend (React + Nginx)
+# =============================================================================
+# Exposes the frontend Pods so they can receive traffic.
+#
+# Access methods:
+#   1. Port-forward (development):
+#      kubectl port-forward -n address-picker svc/frontend-service 5173:80
+#      → Open http://localhost:5173
+#
+#   2. Via Ingress (production-like):
+#      → Ingress routes / to this service
+#
+#   3. Direct ClusterIP (from within cluster only):
+#      http://frontend-service.address-picker.svc.cluster.local
+# =============================================================================
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend-service
+  namespace: address-picker
+  labels:
+    app: frontend
+spec:
+  type: ClusterIP             # Internal only; use Ingress for external access
+  
+  # Selector: routes traffic to Pods with matching labels
+  selector:
+    app: frontend             # Must match Pod labels in frontend-deployment.yaml
+  
+  ports:
+    - protocol: TCP
+      port: 80                # Port the Service listens on
+      targetPort: 80          # Port on the Pods (Nginx listens on 80)

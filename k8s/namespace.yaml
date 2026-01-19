@@ -1,0 +1,18 @@
+# =============================================================================
+# Namespace: Logical isolation for the address-picker application
+# =============================================================================
+# A Namespace provides:
+#   - Resource isolation (pods, services, secrets are scoped to this namespace)
+#   - Access control (RBAC can be applied per namespace)
+#   - Resource quotas (limit CPU/memory per namespace)
+#
+# Apply first: kubectl apply -f namespace.yaml
+# =============================================================================
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: address-picker
+  labels:
+    # Labels help identify and select resources
+    name: address-picker
+    app: address-picker

@@ -1,0 +1,35 @@
+# =============================================================================
+# Service: Backend API
+# =============================================================================
+# A Service provides stable networking for Pods:
+#   - Pods are ephemeral (IPs change), but Services have stable DNS names
+#   - Load balances traffic across all matching Pods
+#   - Enables service discovery via DNS: http://backend:8080
+#
+# IMPORTANT: The name "backend" matches what nginx.conf expects:
+#   proxy_pass http://backend:8080/api;
+#
+# Service Types:
+#   - ClusterIP (default): Internal only, accessible within cluster
+#   - NodePort: Exposes on each node's IP at a static port
+#   - LoadBalancer: Cloud provider creates external load balancer
+# =============================================================================
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend  
+  namespace: address-picker
+  labels:
+    app: backend
+spec:
+  type: ClusterIP             # Internal only (frontend nginx proxies to this)
+  
+  # Selector: routes traffic to Pods with matching labels
+  # Without this, the Service has no endpoints and returns 502!
+  selector:
+    app: backend              # Must match Pod labels in backend-deployment.yaml
+  
+  ports:
+    - protocol: TCP
+      port: 8080              # Port the Service listens on
+      targetPort: 8080        # Port on the Pods (must match containerPort)

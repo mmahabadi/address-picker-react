@@ -1,0 +1,61 @@
+# =============================================================================
+# Ingress: HTTP routing to services
+# =============================================================================
+# An Ingress provides:
+#   - HTTP/HTTPS routing based on hostname and path
+#   - SSL/TLS termination
+#   - Load balancing
+#   - Name-based virtual hosting
+#
+# PREREQUISITES:
+#   - Ingress Controller must be installed (e.g., nginx-ingress)
+#   - For minikube: minikube addons enable ingress
+#
+# ACCESS ON MINIKUBE:
+#   1. Get minikube IP: minikube ip
+#   2. Add to /etc/hosts: <MINIKUBE_IP> address-picker.local
+#   3. Open: http://address-picker.local
+#
+#   OR use tunnel (macOS docker driver):
+#   minikube service -n ingress-nginx ingress-nginx-controller --url
+#   Then map 127.0.0.1 to address-picker.local in /etc/hosts
+#
+# ROUTING:
+#   /        → frontend-service (React app)
+#   /api/*   → backend (Spring Boot API)
+# =============================================================================
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: address-picker-ingress
+  namespace: address-picker
+  # Annotations for nginx-ingress controller (optional)
+  # annotations:
+  #   nginx.ingress.kubernetes.io/rewrite-target: /
+  #   nginx.ingress.kubernetes.io/ssl-redirect: "false"
+spec:
+  # Ingress class: which Ingress Controller handles this Ingress
+  ingressClassName: nginx
+  
+  rules:
+    # Host-based routing (remove "host:" line for wildcard/IP access)
+    - host: address-picker.local
+      http:
+        paths:
+          # Route / to frontend
+          - path: /
+            pathType: Prefix      # Matches /*, /index.html, /assets/*, etc.
+            backend:
+              service:
+                name: frontend-service
+                port:
+                  number: 80
+          
+          # Route /api to backend
+          - path: /api
+            pathType: Prefix      # Matches /api, /api/countries, etc.
+            backend:
+              service:
+                name: backend     # Must match backend service name
+                port:
+                  number: 8080
