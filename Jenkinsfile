@@ -232,10 +232,10 @@ pipeline {
     // This triggers ArgoCD to automatically deploy the new version
     // =========================================================================
     stage('Update Helm Values (GitOps)') {
-        when {
-            // Only run on main branch
-            branch 'main'
-        }
+        // when {
+        //     // Only run on main branch
+        //     branch 'main'
+        // }
         steps {
             withEnv(["PATH=${EXTRA_PATH}:${env.PATH ?: ''}"]) {
                 script {
