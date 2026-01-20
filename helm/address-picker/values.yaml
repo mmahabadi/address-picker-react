@@ -28,11 +28,11 @@ backend:
   # Image configuration
   image:
     repository: docker.io/mehabadi/test
-    tag: backend-local
+    tag: backend-latest
     pullPolicy: IfNotPresent
   
   # Deployment configuration
-  replicaCount: 1
+  replicaCount: 2
   
   # Service configuration
   service:
@@ -82,7 +82,7 @@ frontend:
   # Image configuration
   image:
     repository: docker.io/mehabadi/test
-    tag: frontend-local
+    tag: frontend-latest
     pullPolicy: IfNotPresent
   
   # Deployment configuration
