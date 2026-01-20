@@ -226,6 +226,67 @@ pipeline {
             }
         }
     }
+
+    // =========================================================================
+    // GitOps: Update Helm values with new image tags and push to Git
+    // This triggers ArgoCD to automatically deploy the new version
+    // =========================================================================
+    stage('Update Helm Values (GitOps)') {
+        when {
+            // Only run on main branch
+            branch 'main'
+        }
+        steps {
+            withEnv(["PATH=${EXTRA_PATH}:${env.PATH ?: ''}"]) {
+                script {
+                    def tag = env.GIT_COMMIT_SHORT ?: 'local'
+                    def valuesFile = 'helm/address-picker/values.yaml'
+                    
+                    // Update image tags in values.yaml using sed
+                    sh """
+                        # Update backend image tag
+                        sed -i '' 's/tag: backend-.*/tag: backend-${tag}/' ${valuesFile} || \
+                        sed -i 's/tag: backend-.*/tag: backend-${tag}/' ${valuesFile}
+                        
+                        # Update frontend image tag
+                        sed -i '' 's/tag: frontend-.*/tag: frontend-${tag}/' ${valuesFile} || \
+                        sed -i 's/tag: frontend-.*/tag: frontend-${tag}/' ${valuesFile}
+                        
+                        echo "Updated ${valuesFile} with tag: ${tag}"
+                        cat ${valuesFile} | grep -A2 "image:"
+                    """
+                    
+                    // Configure Git
+                    sh '''
+                        git config user.email "jenkins@localhost"
+                        git config user.name "Jenkins CI"
+                    '''
+                    
+                    // Check if there are changes to commit
+                    def changes = sh(script: "git diff --quiet ${valuesFile} || echo 'changed'", returnStdout: true).trim()
+                    
+                    if (changes == 'changed') {
+                        // Commit and push
+                        // [skip ci] prevents infinite loop (Jenkins won't trigger on this commit)
+                        withCredentials([usernamePassword(
+                            credentialsId: 'github-credentials',
+                            usernameVariable: 'GIT_USER',
+                            passwordVariable: 'GIT_TOKEN'
+                        )]) {
+                            sh """
+                                git add ${valuesFile}
+                                git commit -m "chore: update image tags to ${tag} [skip ci]"
+                                git push https://\${GIT_USER}:\${GIT_TOKEN}@github.com/mmahabadi/address-picker-react.git HEAD:main
+                            """
+                        }
+                        echo "✅ Pushed new image tags to Git. ArgoCD will auto-deploy!"
+                    } else {
+                        echo "ℹ️ No changes to Helm values (tags already up to date)"
+                    }
+                }
+            }
+        }
+    }
   }
 
   post {
