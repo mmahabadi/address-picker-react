@@ -28,7 +28,7 @@ backend:
   # Image configuration
   image:
     repository: docker.io/mehabadi/test
-    tag: backend-latest
+    tag: backend-local
     pullPolicy: IfNotPresent
   
   # Deployment configuration
@@ -82,7 +82,7 @@ frontend:
   # Image configuration
   image:
     repository: docker.io/mehabadi/test
-    tag: frontend-latest
+    tag: frontend-local
     pullPolicy: IfNotPresent
   
   # Deployment configuration
