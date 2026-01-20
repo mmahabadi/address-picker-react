@@ -1,0 +1,28 @@
+{{- if .Values.frontend.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.frontend.name }}
+  namespace: {{ include "address-picker.namespace" . }}
+  labels:
+    {{- include "address-picker.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.frontend.service.type }}
+  {{- if and (eq .Values.frontend.service.type "NodePort") .Values.frontend.service.nodePort }}
+  ports:
+  - port: {{ .Values.frontend.service.port }}
+    targetPort: {{ .Values.frontend.service.targetPort }}
+    nodePort: {{ .Values.frontend.service.nodePort }}
+    protocol: TCP
+    name: http
+  {{- else }}
+  ports:
+  - port: {{ .Values.frontend.service.port }}
+    targetPort: {{ .Values.frontend.service.targetPort }}
+    protocol: TCP
+    name: http
+  {{- end }}
+  selector:
+    {{- include "address-picker.selectorLabels" . | nindent 4 }}
+    component: web
+{{- end }}

@@ -1,0 +1,27 @@
+# Chart.yaml - Metadata about the Helm chart
+apiVersion: v2
+name: address-picker
+description: A Helm chart for the address-picker React application with Spring Boot backend
+type: application
+version: 0.1.0  # Chart version (increment when you update the chart)
+appVersion: "1.0.0"  # Application version (version of your app)
+
+# Dependencies (other charts this chart depends on)
+# Uncomment and configure if you need dependencies
+# dependencies:
+#   - name: postgresql
+#     version: "12.1.0"
+#     repository: "https://charts.bitnami.com/bitnami"
+#     condition: postgresql.enabled
+
+# Maintainers
+maintainers:
+  - name: Your Name
+    email: your.email@example.com
+
+# Keywords for discovery
+keywords:
+  - address-picker
+  - react
+  - spring-boot
+  - web-application

@@ -1,0 +1,164 @@
+# values.yaml - Default configuration values
+# These values can be overridden when installing the chart
+# Usage: helm install my-release . -f values-prod.yaml
+
+# Global settings
+global:
+  imageRegistry: ""  # Override image registry (e.g., "docker.io" or "registry.gitlab.com")
+
+# Image pull secrets for private Docker registries
+# Create the secret first: kubectl create secret docker-registry docker-registry-secret \
+#   --docker-server=https://index.docker.io/v1/ \
+#   --docker-username=YOUR_USERNAME \
+#   --docker-password=YOUR_TOKEN \
+#   -n address-picker
+imagePullSecrets:
+  - name: docker-registry-secret
+
+# Namespace
+namespace:
+  name: address-picker
+  create: true  # Create namespace if it doesn't exist
+
+# Backend configuration
+backend:
+  enabled: true
+  name: backend
+  
+  # Image configuration
+  image:
+    repository: docker.io/mehabadi/test
+    tag: backend-latest
+    pullPolicy: IfNotPresent
+  
+  # Deployment configuration
+  replicaCount: 2
+  
+  # Service configuration
+  service:
+    type: ClusterIP
+    port: 8080
+    targetPort: 8080
+  
+  # Resource limits
+  resources:
+    requests:
+      memory: "256Mi"
+      cpu: "250m"
+    limits:
+      memory: "512Mi"
+      cpu: "500m"
+  
+  # Environment variables
+  env:
+    - name: SPRING_PROFILES_ACTIVE
+      value: "production"
+  
+  # Health checks
+  # Using /api/countries as health endpoint (actuator not enabled)
+  livenessProbe:
+    httpGet:
+      path: /api/countries
+      port: 8080
+    initialDelaySeconds: 30
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 3
+  
+  readinessProbe:
+    httpGet:
+      path: /api/countries
+      port: 8080
+    initialDelaySeconds: 10
+    periodSeconds: 5
+    timeoutSeconds: 3
+    failureThreshold: 3
+
+# Frontend configuration
+frontend:
+  enabled: true
+  name: frontend
+  
+  # Image configuration
+  image:
+    repository: docker.io/mehabadi/test
+    tag: frontend-latest
+    pullPolicy: IfNotPresent
+  
+  # Deployment configuration
+  replicaCount: 2
+  
+  # Service configuration
+  service:
+    type: NodePort
+    port: 80
+    targetPort: 80
+    nodePort: 30080  # Only used if type is NodePort
+  
+  # Resource limits
+  resources:
+    requests:
+      memory: "128Mi"
+      cpu: "100m"
+    limits:
+      memory: "256Mi"
+      cpu: "200m"
+  
+  # Environment variables
+  env:
+    - name: NODE_ENV
+      value: "production"
+  
+  # Health checks
+  livenessProbe:
+    httpGet:
+      path: /
+      port: 80
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 3
+  
+  readinessProbe:
+    httpGet:
+      path: /
+      port: 80
+    initialDelaySeconds: 5
+    periodSeconds: 5
+    timeoutSeconds: 3
+    failureThreshold: 3
+
+# Ingress configuration
+ingress:
+  enabled: false  # Set to true to enable Ingress
+  className: "nginx"  # Ingress class name
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+  hosts:
+    - host: address-picker.local
+      paths:
+        - path: /
+          pathType: Prefix
+          service: frontend
+        - path: /api
+          pathType: Prefix
+          service: backend
+  tls: []  # TLS configuration (optional)
+
+# ConfigMap
+configMap:
+  enabled: true
+  data:
+    backend.properties: |
+      spring.application.name=backend
+      server.port=8080
+      logging.level.root=INFO
+    frontend.env: |
+      NODE_ENV=production
+      REACT_APP_API_URL=http://backend:8080/api
+
+dockerSecret:
+  create: true  # Set to true to create secret via Helm
+  name: docker-registry-secret
+  auth: "bWVoYWJhZGk6ZGNrcl9wYXRfeXJEeTViNzQwY0wtQVRZTU1PbTlhMUYwQ2M0"  # Base64 of username:token (DON'T commit real values!)
