@@ -67,10 +67,18 @@ pipeline {
             withEnv(["PATH=${EXTRA_PATH}:${env.PATH ?: ''}"]) {
             // Checkout the code from the repository
             checkout scm
-            // Get the short commit hash
+            // Get the short commit hash and check for [skip ci]
             script {
                 env.GIT_COMMIT_SHORT = sh(script: 'git rev-parse --short HEAD', returnStdout: true).trim()
                 echo "Commit: ${env.GIT_COMMIT_SHORT}"
+                
+                // Check if commit message contains [skip ci]
+                def commitMsg = sh(script: 'git log -1 --pretty=%B', returnStdout: true).trim()
+                if (commitMsg.contains('[skip ci]') || commitMsg.contains('[ci skip]')) {
+                    echo "⏭️ Skipping build - commit message contains [skip ci]"
+                    currentBuild.result = 'NOT_BUILT'
+                    error("Skipping build due to [skip ci] in commit message")
+                }
             }
             }
         }
