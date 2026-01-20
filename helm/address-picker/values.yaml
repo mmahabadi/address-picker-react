@@ -32,7 +32,7 @@ backend:
     pullPolicy: IfNotPresent
   
   # Deployment configuration
-  replicaCount: 2
+  replicaCount: 1
   
   # Service configuration
   service:
@@ -86,7 +86,7 @@ frontend:
     pullPolicy: IfNotPresent
   
   # Deployment configuration
-  replicaCount: 2
+  replicaCount: 1
   
   # Service configuration
   service:
